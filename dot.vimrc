@@ -1,0 +1,8 @@
+
+" set accordingly
+fun! MySys()
+  return "linux"
+endfun
+
+set runtimepath=~/.vim,$VIMRUNTIME
+source ~/.vim/.vimrc

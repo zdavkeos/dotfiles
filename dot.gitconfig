@@ -1,0 +1,16 @@
+[user]
+	name = Zach Davis
+	email = zdavkeos@gmail.com
+[merge]
+	tool = meld
+[core]
+	editor = emacs
+[alias]
+	lg = log
+	st = status
+	ci = commit
+	co = checkout
+	br = branch
+[github]
+	name=zdavkeos
+
