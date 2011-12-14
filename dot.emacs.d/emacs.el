@@ -73,7 +73,7 @@
 ;; show column number
 (column-number-mode 1)
 
-;; change how diff's are displayed
+;; change how diff's are displayed/navigated
 (setq diff-switches "")
 (add-hook 'diff-mode-hook
     (lambda ()
@@ -82,9 +82,12 @@
 	)
 )
 
-;; make page up/down just move the screen one line
-(global-set-key (kbd "<prior>") '(lambda () (interactive)(cua-scroll-down 2)))
-(global-set-key (kbd "<next>")  '(lambda () (interactive)(cua-scroll-up 2)))
+;; make page up/down just move the screen a few lines
+(global-set-key (kbd "<prior>") '(lambda () (interactive)(cua-scroll-down 3)))
+(global-set-key (kbd "<next>")  '(lambda () (interactive)(cua-scroll-up 3)))
+
+;; toggle whitespace-mode with F5
+(global-set-key (kbd "<f5>") 'whitespace-mode)
 
 ;; remember the last line you were on when you quit
 (setq save-place-file "~/.emacs.d/saveplace")
@@ -251,30 +254,12 @@
 (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 (add-to-list 'auto-mode-alist '("\\.json$" . js2-mode))
 
-;; highlighting for dos batch files
-(autoload 'bat-mode "dosbat" "" t nil)
-
-;; add 'surround word or region with tag' function shortcut
-(global-set-key "\C-x t" 'tag-word-or-region)
-
 ;; change default font
 (set-face-attribute 'default nil :font "Inconsolata 12")
 ;(set-face-attribute 'default nil :font "Droid Sans Mono 10")
 ;(set-face-attribute 'default nil :font "DejaVu Sans Mono 10")
 ;(set-face-attribute 'default nil :font "Consolas 10")
 ;(set-face-attribute 'default nil :font "Anonymous Pro 12")
-
-
-;; full-screen
-;;;;;;;;;;;;;;;;;;
-(defun toggle-fullscreen (&optional f)
-  (interactive)
-  (let ((current-value (frame-parameter nil 'fullscreen)))
-    (set-frame-parameter nil 'fullscreen
-			 (if (equal 'fullboth current-value)
-			     (if (boundp 'old-fullscreen) old-fullscreen nil)
-			   (progn (setq old-fullscreen current-value)
-				  'fullboth)))))
 
 
 ;; tex/latex stuff
@@ -315,17 +300,9 @@
      )
 )
 
-;; org mode templates
-;(load "~/.emacs.d/org-template.el")
-;(setq org-latex-to-pdf-process
-;      '("xelatex -shell-escape -interaction nonstopmode %f"))
-
 ;; color-theme package config
-;(require 'color-theme)
-;(eval-after-load "color-theme"
-;  '(progn
-;     (color-theme-initialize)
-;     (color-theme-zenburn)))
+(require 'color-theme-zenburn)
+(color-theme-zenburn)
 
 
 ;; Doxymacs package
@@ -345,28 +322,15 @@
 
 ;(setq multi-term-program "/bin/bash")   ;; use bash
 (setq multi-term-program "/bin/zsh")   ;; use zsh
-(setq multi-term-program "C:/cygwin/bin/bash.exe --login -i")   ;; use cygwin
+;(setq multi-term-program "C:/cygwin/bin/bash.exe --login -i")   ;; use cygwin
 
 (global-set-key (kbd "C-c t") 'multi-term-next)
 (global-set-key (kbd "C-c T") 'multi-term) ;; create a new one
 ;;;;;;;;;;;;;;;;;;;;
 
-
-;; arduino mode package
-;;;;;;;;;;;;;;;;;;;;
-;(require 'arduino-mode)
-;(autoload 'arduino-mode "arduino-mode" nil t)
-;;;;;;;;;;;;;;;;;;;;
-
 ;; ascii table
+;;;;;;;;;;;;;;;;;;;;
 (autoload 'ascii-table "ascii-table" "Show ASCII table." t)
-
-;; Thesaraus!!
-;;;;;;;;;;;;;;;;;;;;
-;(setq synonyms-file  "~/.emacs.d/mthesaur.txt")
-;(setq synonyms-cache-file  "~/.emacs.d/mthesaur.txt.cache")
-;(require 'synonyms)
-;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; Deft mode:
