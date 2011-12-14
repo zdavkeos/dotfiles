@@ -27,7 +27,7 @@
 
 ;; shortcut to open .emacs (emacs-fu)
 (global-set-key (kbd "C-c E") ;; .emacs
-  (lambda()(interactive)(find-file "~/.emacs.d/.emacs")))
+  (lambda()(interactive)(find-file "~/.emacs.d/emacs.el")))
 
 ;; set default tab width
 (setq-default tab-width 4)
@@ -253,6 +253,9 @@
 (autoload 'js2-mode "js2" "JavaScript Mode" t)
 (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 (add-to-list 'auto-mode-alist '("\\.json$" . js2-mode))
+
+;; highlighting for dos batch files
+(autoload 'bat-mode "dosbat" "" t nil)
 
 ;; change default font
 (set-face-attribute 'default nil :font "Inconsolata 12")
