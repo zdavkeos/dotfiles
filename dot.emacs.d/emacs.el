@@ -19,7 +19,7 @@
 ;; local elisp files path
 (setq load-path (append (list nil "~/.emacs.d") load-path))
 
-;; load my set handy functions
+;; load my set of handy functions
 (load "~/.emacs.d/funcs.el")
 
 ;; disable the toolbar
@@ -74,20 +74,23 @@
 (column-number-mode 1)
 
 ;; change how diff's are displayed/navigated
-(setq diff-switches "")
+(setq diff-switches "") ;unified diff
 (add-hook 'diff-mode-hook
     (lambda ()
-	    (local-set-key (kbd "<M-down>") 'diff-hunk-next)
-		(local-set-key (kbd "<M-up>") 'diff-hunk-prev)
-	)
+        (local-set-key [M-down] 'diff-hunk-next)
+        (local-set-key [M-up] 'diff-hunk-prev)
+    )
 )
 
 ;; make page up/down just move the screen a few lines
-(global-set-key (kbd "<prior>") '(lambda () (interactive)(cua-scroll-down 3)))
-(global-set-key (kbd "<next>")  '(lambda () (interactive)(cua-scroll-up 3)))
+(global-set-key [prior] '(lambda () (interactive)(cua-scroll-down 3)))
+(global-set-key [next]  '(lambda () (interactive)(cua-scroll-up 3)))
 
 ;; toggle whitespace-mode with F5
 (global-set-key (kbd "<f5>") 'whitespace-mode)
+
+;; make C-[ => M-x
+(global-set-key (kbd "C-]") 'execute-extended-command)
 
 ;; remember the last line you were on when you quit
 (setq save-place-file "~/.emacs.d/saveplace")
@@ -97,7 +100,7 @@
 ;; Automatically reload files after they've been modified 
 (global-auto-revert-mode 1)
 
-;; c style indentation stuff
+;; c style and indentation
 (setq c-default-style "linux")
 (setq c-basic-offset 4)
 (setq c-offsets-alist '((substatement-open . 0)
@@ -107,14 +110,13 @@
 ;; collection of c-mode hooks
 (add-hook 'c-mode-common-hook
   (lambda()
-    (local-set-key  (kbd "C-c o") 'ff-find-other-file) ;find implementation in .c from .h
     (which-function-mode t) ; add current function name to status bar
     (local-set-key (kbd "C-c C-v") 'compile) ; make C^c C^v 'compile' in c-mode
     ; add highlights to TODO, etc. in c/c++/java files
     (font-lock-add-keywords nil
 			    '(("\\<\\(FIXME\\|TODO\\|BUG\\):" 1 font-lock-warning-face t)))
     ;change default compile-command
-    (set (make-local-variable 'compile-command) "gcc -Wall -ggdb -o ")
+    ;(set (make-local-variable 'compile-command) "gcc -Wall -g -o")
     (flyspell-prog-mode) ; spell checking of comments
     ))
 
@@ -125,20 +127,17 @@
     (local-set-key  (kbd "C-c C-v") 'compile) ; make C^c C^v 'compile' in c-mode
     (font-lock-add-keywords nil '(("\\<\\(FIXME\\|TODO\\|BUG\\):" 1 font-lock-warning-face t)))
     (flyspell-prog-mode) ; spell checking of comments
-    ))
-
-;; couple of java-mode hooks
-(add-hook 'java-mode-hook
-  (lambda()
-    (set (make-local-variable 'compile-command) "javac ")
+	(which-function-mode t)
     ))
 
 ;; python related stuff
 (add-to-list 'auto-mode-alist '("\\.py\\'" . python-mode))
+(add-to-list 'auto-mode-alist '("\\.ipy\\'" . python-mode))
 (add-to-list 'interpreter-mode-alist '("python" . python-mode))
 (add-hook 'python-mode-hook
   (lambda ()
     (local-set-key (kbd "C-c C-c") 'comment-region)
+	(which-function-mode t)
   )
 )
 (autoload 'python-mode "python-mode" "Python Mode." t)
@@ -146,8 +145,10 @@
 ;; org mode hooks
 (add-hook 'org-mode-hook
     (lambda ()
-	    (local-set-key (kbd "M-n") 'outline-next-visible-heading)
-	    (local-set-key (kbd "M-p") 'outline-prev-visible-heading)
+        (local-set-key (kbd "M-n") 'outline-next-visible-heading)
+        (local-set-key (kbd "M-p") 'outline-prev-visible-heading)
+        ;(setq org-indent-mode t)
+        (setq org-hide-leading-stars nil)
     )
 )
 
@@ -156,9 +157,14 @@
 (global-set-key [f11]  'end-kbd-macro)
 (global-set-key [f12]  'call-last-kbd-macro)
 
+;; make alt-F4 close emacs
+(global-set-key [M-f4] 'save-buffers-kill-terminal)
 
-;; disable C-x f, gets me every time - but not anymore.
+;; disable C-x f, gets me every time
 (global-unset-key "\C-xf")
+
+;; chang ESC key to be like C-g (stackoverflow)
+(global-set-key (kbd "<escape>") 'keyboard-quit)
 
 ;; change format of title bar
 (setq frame-title-format '(buffer-file-name "   %f" ("   %b")))
@@ -172,10 +178,16 @@
 ;; change C-z to undo
 (global-set-key (kbd "C-z") 'undo)
 
+;; duplicate line M-RET
+(global-set-key (kbd "M-RET") 'duplicate-line)
+
 ;; make alias for query-replace-regex
 (defalias 'qrr 'query-replace-regexp)
 
-;;add support for README, .cu, .bat and .spt extensions
+;; make shortcut for whitespace-mode
+(global-set-key [f5] 'whitespace-mode)
+
+;;add support for common file extensions
 (setq auto-mode-alist (cons '("README" . text-mode) auto-mode-alist))
 (setq auto-mode-alist (cons '("\\.cu$" . c-mode) auto-mode-alist))
 (setq auto-mode-alist (cons '("\\.glsl$" . c-mode) auto-mode-alist))
@@ -193,7 +205,7 @@
 
 
 ;; Helper for compilation. Close the compilation window if
-;; there was no error at all. (emacs wiki)
+;; there were no errors. (emacs wiki)
 (defun compilation-exit-autoclose (status code msg)
   ;; If M-x compile exists with a 0
   (when (and (eq status 'exit) (zerop code))
@@ -230,6 +242,8 @@
 (ido-mode 1)
 
 ;; some handy tags-related stuff
+;; - Navigate forward) and backward( in tag search
+;;   M-* to quit search and return to start
 (global-set-key (kbd "M-)") '(lambda() (interactive)(find-tag nil t)))
 (global-set-key (kbd "M-(") '(lambda() (interactive)(find-tag nil '-)))
 
@@ -237,7 +251,15 @@
 (global-set-key (kbd "C-<") (lambda() (interactive)(goto-char (point-min))))
 (global-set-key (kbd "C->") (lambda() (interactive)(goto-char (point-max))))
 
+;; backward-kill-sexp can be pretty handy
+(global-set-key (kbd "C-M-<backspace>") 'backward-kill-sexp)
 
+;; nxml mode cutomizations
+(add-hook 'nxml-mode-hook
+  (lambda ()
+	(setq nxml-child-indent 4)
+    (setq nxml-sexp-element-flag t)
+))
 
 ;;;;;;;;;;;;;;;;;;;;;;; Stuff that requires dependencies ;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -247,7 +269,7 @@
 ;; enable line numbers: linum.el
 ;; http://stud4.tuwien.ac.at/~e0225855/linum/linum.html
 (require 'linum)
-(global-set-key (kbd "<f6>") 'linum-mode)
+(global-set-key [f6] 'linum-mode)
 
 ;;javascript major mode using Steve Yegge's js2.el
 (autoload 'js2-mode "js2" "JavaScript Mode" t)
@@ -316,6 +338,18 @@
           '(lambda ()
              (if (or (eq major-mode 'c-mode) (eq major-mode 'c++-mode))
                  (doxymacs-font-lock))))
+
+
+;; Markdown syntax highlighting
+(autoload 'markdown-mode "markdown-mode"
+  "Major mode for editing Markdown files" t)
+(setq auto-mode-alist
+      (cons '("\\.md" . markdown-mode) auto-mode-alist))
+
+;; C# stuff
+(autoload 'csharp-mode "csharp-mode" "Major mode for editing C# code." t)
+(setq auto-mode-alist
+      (append '(("\\.cs$" . csharp-mode)) auto-mode-alist))
 
 
 ;; multi-term package

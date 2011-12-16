@@ -1,3 +1,4 @@
+;; -*- mode: emacs-lisp-mode; -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;;   Collection of handy functions
@@ -95,6 +96,7 @@
         (replace-match "")
 	)
   )
+  (message "Extraneous whitespace removed")
 )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -178,25 +180,71 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Copied from:
-; http://www.johndcook.com/blog/2010/08/05/emacs-command-to-add-html-tags/
-;; surround a word or region with a tag (html)
-(defun tag-word-or-region (tag)
-    "Surround current word or region with a given tag."
-    (interactive "sEnter tag (without <>): ")
-    (let (pos1 pos2 bds start-tag end-tag)
-        (setq start-tag (concat "<" tag ">"))
-        (setq end-tag (concat "</" tag ">"))
-        (if (and transient-mark-mode mark-active)
-            (progn
-                (goto-char (region-end))
-                (insert end-tag)
-                (goto-char (region-beginning))
-                (insert start-tag))
-            (progn
-                (setq bds (bounds-of-thing-at-point 'symbol))
-                (goto-char (cdr bds))
-                (insert end-tag)
-                 (goto-char (car bds))
-                 (insert start-tag)))))
+;; diff-region* - Diff two regions
+;;
+;;  To compare two regions, select the first
+;; region and run `diff-region`.  The region is
+;; now copied to a seperate diff-ing buffer.
+;; Next, navigate to the next region in question
+;; (even in another file).  Mark the region and
+;; run `diff-region-now`, the diff of the two
+;; regions will be displayed by ediff.
+;;
+;;  You can re-select the first region at any time
+;; by re-calling `diff-region`.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun diff-region ()
+  "Select a region to compare"
+  (interactive)
+  (when (use-region-p)  ; there is a region
+		(let (buf) 
+		  (setq buf (get-buffer-create "*Diff-regionA*"))
+		  (save-current-buffer
+			(set-buffer buf)
+			(erase-buffer))
+		  (append-to-buffer buf (region-beginning) (region-end)))
+  )
+  (message "Now select other region to compare and run `diff-region-now`")
+)
+
+(defun diff-region-now ()
+  "Compare current region with region already selected by `diff-region`"
+  (interactive)
+  (when (use-region-p)
+		(let (bufa bufb)
+		  (setq bufa (get-buffer-create "*Diff-regionA*"))
+		  (setq bufb (get-buffer-create "*Diff-regionB*"))
+		  (save-current-buffer
+			(set-buffer bufb)
+			(erase-buffer))
+		  (append-to-buffer bufb (region-beginning) (region-end))
+		  (ediff-buffers bufa bufb))
+  )
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Duplcate line down
+;;
+;; If a region is selected, copy it and place it
+;; on a new line below the current one.  If no
+;; region is selected, copy the current line and
+;; paste a copy on a new line below the current
+;; one
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun duplicate-line ()
+  " duplicate the current line "
+  (interactive)
+  (save-excursion
+	(if mark-active
+		(kill-ring-save (region-beginning) (region-end))
+	    (kill-ring-save (line-beginning-position) (line-beginning-position 2))
+    )
+	(goto-char (line-beginning-position 2)) ; goto the start of the next line
+	(yank)
+   )
+  (next-line)
+)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

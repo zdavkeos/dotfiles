@@ -14,6 +14,9 @@ set tabstop=4
 "set shiftwidth=4 " auto-indent amount
 "set expandtab " change tabs to spaces
 
+" view whitespace in list mode
+set listchars=tab:»·,trail:·
+
 "" make backspace and delete work
 set bs=2
 "set backspace=indent,eol,start
@@ -40,6 +43,8 @@ if has("gui_running")
 	set guioptions-=T
 	set t_Co=256
 	colorscheme zenburn
+	set lines=50
+	set columns=110
 	set nonu
 else
 	set nonu
