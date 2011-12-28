@@ -42,7 +42,9 @@ set noswapfile
 if has("gui_running")
 	set guioptions-=T
 	set t_Co=256
-	colorscheme zenburn
+	set background=dark
+	colorscheme solarized
+	"colorscheme zenburn
 	set lines=50
 	set columns=110
 	set nonu
