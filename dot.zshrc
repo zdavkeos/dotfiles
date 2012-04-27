@@ -56,7 +56,7 @@ function simple_time {
 }
 
 ## Prompt
-export PROMPT='[%n@%m] %.%# '
+export PROMPT='\033[G[%n@%m] %.%# '
 #setopt PROMPT_SUBST
 #export RPROMPT='->$(simple_time) %!'
 #export PROMPT='[%n@%m$(batt_level)] %.$(prompt_char)%# '
