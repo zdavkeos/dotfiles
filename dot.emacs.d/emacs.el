@@ -1,6 +1,6 @@
 ;; .emacs file
 ;; Zach Davis
-;;  06-16-2010
+;;  Created: 06-16-2010
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -14,7 +14,10 @@
 
 ;; name and email -
 (setq user-full-name "Zach Davis")
-(setq user-mail-address "zdavkeos@gmail.com")
+(if 'at-work
+    (setq user-mail-address "Zach.Davis@osii.com")
+    (setq user-mail-address "zdavkeos@gmail.com")
+)
 
 ;; local elisp files path
 (setq load-path (append (list nil "~/.emacs.d") load-path))
@@ -22,25 +25,35 @@
 ;; load my set of handy functions
 (load "~/.emacs.d/funcs.el")
 
-;; disable the toolbar
-(tool-bar-mode -1)
-
 ;; shortcut to open .emacs (emacs-fu)
-(global-set-key (kbd "C-c E") ;; .emacs
+(global-set-key (kbd "C-c E")
   (lambda()(interactive)(find-file "~/.emacs.d/emacs.el")))
+
+;; shortcut to TODO file
+(global-set-key [f3]
+  (lambda()
+	(interactive)
+	(find-file (if 'at-work
+				   "u:/notes/TODO.org"
+				   "~/dropbox/notes/TODO.org"))))
 
 ;; set default tab width
 (setq-default tab-width 4)
 ;; use spaces instead of tabs
-(setq-default indent-tabs-mode nil) ; *hard tabs* uncomment to use soft tabs
-(setq indent-line-function 'insert-tab)
+(if 'at-work
+    (setq indent-line-function 'insert-tab) ; *hard tabs*
+    (setq-default indent-tabs-mode nil) ; *soft tabs*
+)
 (setq tab-stop-list '(4 8 12 16 20 24 28 32 36 40 44 48 52 56 60
-		      64 68 72 76 80 84 88 92 96 100 104 108 112
-		      116 120))
+              64 68 72 76 80 84 88 92 96 100 104 108 112
+              116 120))
 
 ;; highlight matching parens
 (show-paren-mode 1)
 (setq show-paren-delay 1)
+
+;; disable the toolbar
+(tool-bar-mode -1)
 
 ;; put backup files in a specific directory
 (setq backup-directory-alist '(("" . "~/.emacs.d/backups")))
@@ -54,7 +67,7 @@
 ;; disable copy-on-select
 (setq mouse-drag-copy-region nil)
 
-;; smoother scrolling
+;; smoother scrolling - still needed in v24?
 (setq scroll-conservatively 8)
 (setq scroll-margin 1)
 
@@ -70,27 +83,17 @@
 ;; Make all yes-or-no questions as y-or-n
 (fset 'yes-or-no-p 'y-or-n-p)
 
-;; show column number
+;; show column number - slow?
 (column-number-mode 1)
 
-;; change how diff's are displayed/navigated
-(setq diff-switches "") ;unified diff
+;; change how diff's are displayed
+(setq diff-switches "") ; unified diff
 (add-hook 'diff-mode-hook
     (lambda ()
         (local-set-key [M-down] 'diff-hunk-next)
         (local-set-key [M-up] 'diff-hunk-prev)
     )
 )
-
-;; make page up/down just move the screen a few lines
-(global-set-key [prior] '(lambda () (interactive)(cua-scroll-down 3)))
-(global-set-key [next]  '(lambda () (interactive)(cua-scroll-up 3)))
-
-;; toggle whitespace-mode with F5
-(global-set-key (kbd "<f5>") 'whitespace-mode)
-
-;; make C-[ => M-x
-(global-set-key (kbd "C-]") 'execute-extended-command)
 
 ;; remember the last line you were on when you quit
 (setq save-place-file "~/.emacs.d/saveplace")
@@ -100,34 +103,43 @@
 ;; Automatically reload files after they've been modified 
 (global-auto-revert-mode 1)
 
-;; c style and indentation
-(setq c-default-style "linux")
-(setq c-basic-offset 4)
-(setq c-offsets-alist '((substatement-open . 0)
-                        (case-label . 4)
-			(access-label . /)))
-
 ;; collection of c-mode hooks
 (add-hook 'c-mode-common-hook
   (lambda()
+    ;(local-set-key  (kbd "C-c o") 'ff-find-other-file) ;find implementation in .c from .h
     (which-function-mode t) ; add current function name to status bar
+	(imenu-add-menubar-index) ; add an index
     (local-set-key (kbd "C-c C-v") 'compile) ; make C^c C^v 'compile' in c-mode
     ; add highlights to TODO, etc. in c/c++/java files
     (font-lock-add-keywords nil
-			    '(("\\<\\(FIXME\\|TODO\\|BUG\\):" 1 font-lock-warning-face t)))
-    ;change default compile-command
-    ;(set (make-local-variable 'compile-command) "gcc -Wall -g -o")
+                '(("\\<\\(FIXME\\|TODO\\|BUG\\):" 1 font-lock-warning-face t))
+				'((c-mode-font-lock-if0 (0 font-lock-comment-face prepend))))
     (flyspell-prog-mode) ; spell checking of comments
+	;; c style indentation stuff
+	(setq c-default-style "linux")
+	(setq c-basic-offset 4)
+	(add-to-list 'c-offsets-alist '(substatement-open . 0))
+	(add-to-list 'c-offsets-alist '(access-label . /))
+	(if 'at-work
+		(add-to-list 'c-offsets-alist '(case-label . 0) t)
+	  (add-to-list 'c-offsets-alist '(case-label . 4) t))
     ))
+
 
 ;; couple of c++-mode hooks
 (add-hook 'c++-mode-hook
   (lambda()
-    (set (make-local-variable 'compile-command) "g++ -Wall -g -o ")
+    ;(set (make-local-variable 'compile-command) "g++ -Wall -g -o ")
     (local-set-key  (kbd "C-c C-v") 'compile) ; make C^c C^v 'compile' in c-mode
     (font-lock-add-keywords nil '(("\\<\\(FIXME\\|TODO\\|BUG\\):" 1 font-lock-warning-face t)))
     (flyspell-prog-mode) ; spell checking of comments
 	(which-function-mode t)
+    ))
+
+;; couple of java-mode hooks
+(add-hook 'java-mode-hook
+  (lambda()
+    (set (make-local-variable 'compile-command) "javac ")
     ))
 
 ;; python related stuff
@@ -137,20 +149,32 @@
 (add-hook 'python-mode-hook
   (lambda ()
     (local-set-key (kbd "C-c C-c") 'comment-region)
-	(which-function-mode t)
-  )
-)
+	(which-function-mode t)))
 (autoload 'python-mode "python-mode" "Python Mode." t)
 
 ;; org mode hooks
 (add-hook 'org-mode-hook
-    (lambda ()
-        (local-set-key (kbd "M-n") 'outline-next-visible-heading)
-        (local-set-key (kbd "M-p") 'outline-prev-visible-heading)
-        ;(setq org-indent-mode t)
-        (setq org-hide-leading-stars nil)
-    )
-)
+		  (lambda ()
+			(local-set-key (kbd "M-n") 'outline-next-visible-heading)
+			(local-set-key (kbd "M-p") 'outline-prev-visible-heading)
+			;(setq org-indent-mode t)
+			(setq org-hide-leading-stars nil)))
+
+
+;; disable the startup screen
+(custom-set-variables
+  ;; custom-set-variables was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ '(inhibit-startup-screen t))
+
+;; make page up/down just move the screen a few lines
+(global-set-key [prior] '(lambda () (interactive)(cua-scroll-down 3)))
+(global-set-key [next]  '(lambda () (interactive)(cua-scroll-up 3)))
+
+;; make C-[ => M-x
+(global-set-key (kbd "C-]") 'execute-extended-command)
 
 ;; record macro
 (global-set-key [f10]  'start-kbd-macro)
@@ -163,14 +187,21 @@
 ;; disable C-x f, gets me every time
 (global-unset-key "\C-xf")
 
-;; chang ESC key to be like C-g (stackoverflow)
+;; kill to beginning of line
+(global-set-key (kbd "\C-c\C-k") '(lambda () (kill-line -1)))
+
+;; change C-x C-o from delete-blank lines
+;; to fixup-whitespace
+(global-set-key (kbd "\C-x\C-o") 'fixup-whitespace)
+
+;; change ESC key to be like C-g (stackoverflow)
 (global-set-key (kbd "<escape>") 'keyboard-quit)
 
 ;; change format of title bar
-(setq frame-title-format '(buffer-file-name "   %f" ("   %b")))
+(setq frame-title-format '(buffer-file-name "     %f" ("   %b")))
 
 ;; change M^s to regex search
-(global-set-key "\M-s" 'isearch-forward-regexp)
+(global-set-key (kbd "M-s") 'isearch-forward-regexp)
 
 ;; add rectangle command string-insert-rectangle
 (global-set-key (kbd "C-x r i") 'string-insert-rectangle)
@@ -184,62 +215,11 @@
 ;; make alias for query-replace-regex
 (defalias 'qrr 'query-replace-regexp)
 
+;; make line wrapping shortcut
+(defalias 'wrapping 'toggle-truncate-lines)
+
 ;; make shortcut for whitespace-mode
 (global-set-key [f5] 'whitespace-mode)
-
-;;add support for common file extensions
-(setq auto-mode-alist (cons '("README" . text-mode) auto-mode-alist))
-(setq auto-mode-alist (cons '("\\.cu$" . c-mode) auto-mode-alist))
-(setq auto-mode-alist (cons '("\\.glsl$" . c-mode) auto-mode-alist))
-(setq auto-mode-alist (cons '("\\.stp$" . c-mode) auto-mode-alist))
-(setq auto-mode-alist (cons '("\\.bat$" . bat-mode) auto-mode-alist))
-
-;; fancy things up a bit
-(global-font-lock-mode t)
-(setq font-lock-maximum-decoration t)
-(modify-frame-parameters nil '((wait-for-wm . nil)))
-
-
-;; add 'insert template?' on file-open hook
-(add-hook 'find-file-hook 'insert-template)
-
-
-;; Helper for compilation. Close the compilation window if
-;; there were no errors. (emacs wiki)
-(defun compilation-exit-autoclose (status code msg)
-  ;; If M-x compile exists with a 0
-  (when (and (eq status 'exit) (zerop code))
-    ;; then bury the *compilation* buffer, so that C-x b doesn't go there
-    (bury-buffer)
-    ;; and delete the *compilation* window
-    (delete-window (get-buffer-window (get-buffer "*compilation*"))))
-  ;; Always return the anticipated result of compilation-exit-message-function
-  (cons msg code))
-;; Specify my function (maybe I should have done a lambda function)
-(setq compilation-exit-message-function 'compilation-exit-autoclose)
-
-;;; OS dependant stuff
-(if (eq system-type 'windows-nt)
-    (progn
-      '(inferior-lisp-program nil)
-    )
-    (progn
-      '(inferior-lisp-program "clisp")
-    )
-)
-
-
-;; ido-mode (interactively do things)
-(require 'ido)
-(setq ido-case-fold t)
-(setq ido-enable-flex-matching t)
-(setq ido-enable-regexp t)
-(setq ido-enable-last-directory-history nil)
-(setq ido-record-commands nil)
-(setq ido-max-work-directory-list 0)
-(setq ido-max-work-file-list 0)
-(setq confirm-nonexistent-file-or-buffer nil)
-(ido-mode 1)
 
 ;; some handy tags-related stuff
 ;; - Navigate forward) and backward( in tag search
@@ -254,12 +234,75 @@
 ;; backward-kill-sexp can be pretty handy
 (global-set-key (kbd "C-M-<backspace>") 'backward-kill-sexp)
 
+;; kill from cursor to beginning of line
+(global-set-key (kbd "M-<backspace>") 'backward-kill-line)
+
+;;add support for common extensions
+(add-to-list 'auto-mode-alist '("README"        . text-mode))
+(add-to-list 'auto-mode-alist '("\\.cu$"        . c-mode))
+(add-to-list 'auto-mode-alist '("\\.glsl$"      . c-mode))
+(add-to-list 'auto-mode-alist '("\\.stp$"       . c-mode))
+(add-to-list 'auto-mode-alist '("makefile.win$" . makefile-mode))
+(add-to-list 'auto-mode-alist '("\\..*json$" . js2-mode))
+
+;; Ps Print settings
+;; letter paper, 10 pt, no header
+(setq ps-paper-type 'letter
+	  ps-font-size 10.0
+	  ps-print-header nil
+	  ps-landscape-mode nil
+	  ps-number-of-columns 1)
+
+;; fancy things up a bit
+(global-font-lock-mode t)
+(setq font-lock-maximum-decoration t)
+(modify-frame-parameters nil '((wait-for-wm . nil)))
+
+;; Set the window size (if running in a window) (broken?)
+(if (window-system)
+	(progn
+	  (add-to-list 'default-frame-alist (cons 'width 110))
+	  (add-to-list 'default-frame-alist (cons 'height 45))
+))
+
+
+;; Helper for compilation. Close the compilation window if
+;; there were no errors. (emacs wiki)
+(defun compilation-exit-autoclose (status code msg)
+  (when (and (eq status 'exit) (zerop code))
+    (bury-buffer)
+    (delete-window (get-buffer-window (get-buffer "*compilation*"))))
+  (cons msg code))
+(setq compilation-exit-message-function 'compilation-exit-autoclose)
+
+;;;;;;;;;;;;;;;;;;;;
+;; ido-mode (interactively do things)
+;;;;;;;;;;;;;;;;;;;;
+(require 'ido)
+(setq ido-case-fold t)
+(setq ido-enable-flex-matching t)
+(setq ido-enable-regexp t)
+(setq ido-enable-last-directory-history nil)
+(setq ido-record-commands nil)
+(setq ido-max-work-directory-list 0)
+(setq ido-max-work-file-list 0)
+(setq confirm-nonexistent-file-or-buffer nil)
+(ido-mode 1)
+
+;;;;;;;;;;;;;;;;;;;;
 ;; nxml mode cutomizations
+;;;;;;;;;;;;;;;;;;;;
 (add-hook 'nxml-mode-hook
   (lambda ()
 	(setq nxml-child-indent 4)
-    (setq nxml-sexp-element-flag t)
-))
+    (setq nxml-sexp-element-flag t)))
+
+;;;;;;;;;;;;;;;;;;;;
+;; asm mode hooks
+;;;;;;;;;;;;;;;;;;;;
+(add-hook 'asm-mode-hook
+  (lambda ()
+    (setq comment-column 25)))
 
 ;;;;;;;;;;;;;;;;;;;;;;; Stuff that requires dependencies ;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -268,26 +311,60 @@
 
 ;; enable line numbers: linum.el
 ;; http://stud4.tuwien.ac.at/~e0225855/linum/linum.html
-(require 'linum)
-(global-set-key [f6] 'linum-mode)
+;;;; Broken in emacs-24!!!!!
+;(require 'linum)
+;(global-set-key [f6] 'linum-mode)
 
-;;javascript major mode using Steve Yegge's js2.el
+;;;;;;;;;;;;;;;;;;;;
+;; javascript major mode using Steve Yegge's js2.el
+;;;;;;;;;;;;;;;;;;;;
 (autoload 'js2-mode "js2" "JavaScript Mode" t)
-(add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
+(add-to-list 'auto-mode-alist '("\\.js$"   . js2-mode))
 (add-to-list 'auto-mode-alist '("\\.json$" . js2-mode))
 
+;;;;;;;;;;;;;;;;;;;;
 ;; highlighting for dos batch files
+;;;;;;;;;;;;;;;;;;;;
 (autoload 'bat-mode "dosbat" "" t nil)
+(add-to-list 'auto-mode-alist '("\\.bat$" . bat-mode))
 
+;;;;;;;;;;;;;;;;;;;;
+;; highlighting for osi files
+;;;;;;;;;;;;;;;;;;;;
+(if 'at-work
+	(progn
+	  (autoload 'rel-mode "relmode" "" t nil)
+	  (autoload 'skm-mode "skmmode" "" t nil)
+	  (autoload 'rc-mode  "rcmode"  "" t nil)
+	  (autoload 'dat-mode  "datmode"  "" t nil)
+	  (autoload 'prod-mode  "prodmode"  "" t nil)
+	  (autoload 'compile-req-mode  "compile-req-mode"  "" t nil)
+	  (add-to-list 'auto-mode-alist '("\\.rel$" . rel-mode))
+	  (add-to-list 'auto-mode-alist '("\\.skm$" . skm-mode))
+	  (add-to-list 'auto-mode-alist '("\\.rc$"  . rc-mode))
+	  (add-to-list 'auto-mode-alist '("\\.DAT$"  . dat-mode))
+	  (add-to-list 'auto-mode-alist '("\\.atd$" . nxml-mode))
+	  (add-to-list 'auto-mode-alist '("\\.atr$" . nxml-mode))
+	  (add-to-list 'auto-mode-alist '("\\.olf$" . nxml-mode))
+	  (add-to-list 'auto-mode-alist '("products\\(NET\\)?.txt\\(.bak\\)?$" . prod-mode))
+	  (add-to-list 'auto-mode-alist '("compile_request.txt$" . compile-req-mode))))
+
+;;;;;;;;;;;;;;;;;;;;
 ;; change default font
-(set-face-attribute 'default nil :font "Inconsolata 12")
+;;;;;;;;;;;;;;;;;;;;
+(if (eq system-type 'windows-nt)
+	(set-face-attribute 'default nil :font "Consolas 10")
+  (set-face-attribute 'default nil :font "Inconsolata 12"))
+
 ;(set-face-attribute 'default nil :font "Droid Sans Mono 10")
 ;(set-face-attribute 'default nil :font "DejaVu Sans Mono 10")
-;(set-face-attribute 'default nil :font "Consolas 10")
+;(set-face-attribute 'default nil :font "Source Code Pro 10")
+;(set-face-attribute 'default nil :font "Verdana 10")
 ;(set-face-attribute 'default nil :font "Anonymous Pro 12")
 
-
+;;;;;;;;;;;;;;;;;;;;
 ;; tex/latex stuff
+;;;;;;;;;;;;;;;;;;;;
 ;(load "auctex.el" nil t t)
 (setq TeX-auto-save t)
 (setq TeX-parse-self t)
@@ -308,74 +385,91 @@
     (progn
       ;; set aspell path
       (setq ispell-program-name "C:/Program Files (x86)/Aspell/bin/aspell.exe")
-      ;; set pdf output to preview in evince, html in firefox
+      ;; set pdf output to preview in Adobe Reader
       '(TeX-output-view-style (quote (
-				 ("^pdf$" "." "C:/Program Files (x86)/Adobe/Reader 10.0/Reader/AcroRd32.exe")
-				 ("^html?$" "." "firefox %o")
-				 )))
-      )
+                ("^pdf$" "." "C:/Program Files (x86)/Adobe/Reader 10.0/Reader/AcroRd32.exe"))))
+	  ;; fix path to find important utility programs
+	  (setenv "PATH"
+			  (concat
+			   ;; Change this with your path to MSYS bin directory
+			   "C:\\cygwin\\bin;"
+			   (getenv "PATH"))))
     (progn
      ;; setup spell-checker
-     (setq ispell-program-name "aspell" ispell-extra-args '("--sug-mode=ultra"))
-     ;; set pdf output to preview in evince, html in firefox
-     '(TeX-output-view-style (quote (
-				 ("^pdf$" "." "evince %o")
-				 ("^html?$" "." "firefox %o")
-				 )))
-     )
-)
+     (setq ispell-program-name "aspell" ispell-extra-args '("--sug-mode=ultra"))))
 
-;; color-theme package config
+;;;;;;;;;;;;;;;;;;;;
+;; color-theme package config - should update for v24
+;;;;;;;;;;;;;;;;;;;;
 (require 'color-theme-zenburn)
 (color-theme-zenburn)
 
-
+;;;;;;;;;;;;;;;;;;;;
 ;; Doxymacs package
-(require 'doxymacs)
-(setq doxymacs-use-external-xml-parser t)
-;(autoload 'doxymacs-mode "doxymacs" "Deal with doxygen." t)
-(add-hook 'font-lock-mode-hook
-          '(lambda ()
-             (if (or (eq major-mode 'c-mode) (eq major-mode 'c++-mode))
-                 (doxymacs-font-lock))))
+;;;;;;;;;;;;;;;;;;;;
+;(require 'doxymacs)
+;(setq doxymacs-use-external-xml-parser nil)
+;(add-hook 'font-lock-mode-hook
+;          '(lambda ()
+;             (if (or (eq major-mode 'c-mode) (eq major-mode 'c++-mode))
+;                 (doxymacs-font-lock))))
 
-
-;; Markdown syntax highlighting
-(autoload 'markdown-mode "markdown-mode"
-  "Major mode for editing Markdown files" t)
-(setq auto-mode-alist
-      (cons '("\\.md" . markdown-mode) auto-mode-alist))
-
-;; C# stuff
-(autoload 'csharp-mode "csharp-mode" "Major mode for editing C# code." t)
-(setq auto-mode-alist
-      (append '(("\\.cs$" . csharp-mode)) auto-mode-alist))
-
-
+;;;;;;;;;;;;;;;;;;;;
 ;; multi-term package
 ;;;;;;;;;;;;;;;;;;;;
 (autoload 'multi-term "multi-term" nil t)
 (autoload 'multi-term-next "multi-term" nil t)
 
-;(setq multi-term-program "/bin/bash")   ;; use bash
-(setq multi-term-program "/bin/zsh")   ;; use zsh
-;(setq multi-term-program "C:/cygwin/bin/bash.exe --login -i")   ;; use cygwin
+(if (eq system-type 'windows-nt)
+	(setq multi-term-program "C:/cygwin/bin/bash.exe")
+  (setq multi-term-program "/bin/zsh"))
 
 (global-set-key (kbd "C-c t") 'multi-term-next)
 (global-set-key (kbd "C-c T") 'multi-term) ;; create a new one
 ;;;;;;;;;;;;;;;;;;;;
 
+;;;;;;;;;;;;;;;;;;;;
 ;; ascii table
 ;;;;;;;;;;;;;;;;;;;;
 (autoload 'ascii-table "ascii-table" "Show ASCII table." t)
 
 ;;;;;;;;;;;;;;;;;;;;
-;; Deft mode:
-;;  http://jblevins.org/projects/deft
+;; Deft mode
 ;;;;;;;;;;;;;;;;;;;;
 (setq deft-extension "org")
-(setq deft-directory "~/Dropbox/notes")
+(if 'at-work
+    (setq deft-directory "U:/notes/")
+    (setq deft-directory "~/dropbox/notes/"))
 (setq deft-text-mode 'org-mode)
 (setq deft-auto-save-interval 15.0)
 (global-set-key [f4] 'deft)
 (require 'deft)
+
+;;;;;;;;;;;;;;;;;;;;
+;; Markdown mode
+;;;;;;;;;;;;;;;;;;;;
+(autoload 'markdown-mode "markdown-mode.el"
+  "Major mode for editing Markdown files" t)
+(add-to-list 'auto-mode-alist '("\\.mdt$" . markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.md$" .  markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.markdown$" .  markdown-mode))
+
+
+;;;;;;;;;;;;;;;;;;;;
+;; C# mode
+;;;;;;;;;;;;;;;;;;;;
+(autoload 'csharp-mode "csharp-mode" "Major mode for editing C# code." t)
+(add-to-list 'auto-mode-alist '("\\.cs$" . csharp-mode))
+
+;;;;;;;;;;;;;;;;;;;;
+;; Haskell mode
+;;;;;;;;;;;;;;;;;;;;
+(load "~/.emacs.d/haskell-mode/haskell-site-file.el")
+(add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
+(add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
+;;(add-hook 'haskell-mode-hook 'turn-on-haskell-simple-indent)
+(setq haskell-program-name "C:/hp/bin/ghci.exe")
+(setq haskell-check-command "C:/Users/zdavis/AppData/Roaming/cabal/bin/hlint.exe")
+
+;; M-x typing-of-emacs
+(require 'typing)
