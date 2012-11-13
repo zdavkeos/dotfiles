@@ -9,7 +9,7 @@ set nocompatible
 "set autoindent
 set smartindent
 
-"" tabwidth 4, use 4 spaces
+"" tabwidth 4 "use 4 spaces
 set tabstop=4
 "set shiftwidth=4 " auto-indent amount
 "set expandtab " change tabs to spaces
@@ -27,35 +27,47 @@ set showmatch
 "" show ruler at bottom of screen
 set ruler
 
-"" auto re-read files if changed externally
+" allow cursor to roam past the end of the line
+set virtualedit=onemore
+
+" auto re-read files if changed externally
 set autoread
 
 "" ignore case when searching
-set ignorecase
+"set ignorecase
+set smartcase
 
 "" turn off backups
 set nobackup
 set nowb
 set noswapfile
 
-"" fancy colors and stuff
+" fancy colors and stuff
+syntax on
 if has("gui_running")
 	set guioptions-=T
 	set t_Co=256
-	set background=dark
 	colorscheme solarized
 	"colorscheme zenburn
 	set lines=50
 	set columns=110
-	set nonu
+	"set nonu
 else
 	set nonu
 endif
+
+" syntax highlighting for REL, RC and SKM files
+augroup filetypedetect
+"au BufNewFile,BufRead *.rel	setf osirel
+"au BufNewFile,BufRead *.skm	setf osiskm
+" au BufNewFile,BufRead *.rc	setf osirc
+au BufNewFile,BufRead *.geojson setf javascript
+augroup END
 
 " setup system specific stuff
 if MySys() == "windows"
      set gfn=Consolas:h10
 elseif MySys() == "linux"
-     set gfn=Inconsolata\ 12
+     set gfn=Inconsolata\ 10
      set shell=/bin/zsh
 endif
