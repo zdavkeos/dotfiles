@@ -377,24 +377,38 @@ Set to nil to hide."
 (defun deft-parse-title (file contents)
   "Parse the given FILE and CONTENTS and determine the title.
 According to `deft-use-filename-as-title', the title is taken to
-be the first non-empty line of a file or the file name."
-  (if deft-use-filename-as-title
-      (deft-base-filename file)
-    (let ((begin (string-match "^.+$" contents)))
-      (if begin
-        (substring contents begin (match-end 0))
-        (deft-base-filename file)))))
+be the first non-empty line of a file or the file name.
+Unless we are in ORG mode, then parse the #+TITLE:"
+  (cond (deft-use-filename-as-title 
+		  (deft-base-filename file))
+		((string= deft-extension "org")
+		 (let ((title (string-match "^#\\+TITLE: .+$" contents)))
+		   (when title
+			 (substring contents (+ title 9) (min (match-end 0)
+												  (+ title deft-window-width))))))
+		(t 
+		 (let ((begin (string-match "^.+$" contents)))
+		   (if begin
+			   (substring contents begin (match-end 0))
+			 (deft-base-filename file))))))
 
 (defun deft-parse-summary (contents title)
   "Parse the file CONTENTS, given the TITLE, and extract a summary.
 The summary is a string extracted from the contents following the
 title."
-  (let ((summary (replace-regexp-in-string "[\n\t]" " " contents)))
-    (if (and (not deft-use-filename-as-title) title)
-        (if (string-match (regexp-quote title) summary)
-            (deft-chomp (substring summary (match-end 0) nil))
-          "")
-      summary)))
+  (if (string= deft-extension "org")
+	  (let ((summ (string-match "^#\\+DESCRIPTION: .*$" contents)))
+		(when summ
+		  (substring contents (+ summ 15) (min (match-end 0)
+											   (+ summ deft-window-width)))))
+	  (let* ((contents (replace-regexp-in-string "\n" " " contents))
+			 (begin (when title (string-match (regexp-quote title) contents)))
+			 (size (- deft-line-width (length deft-separator) (match-end 0))))
+		(when begin
+		  (when (< 0 size)
+			(setq contents (substring contents (match-end 0) (length contents)))
+			(setq contents (deft-chomp contents))
+			(substring contents 0 (min size (length contents))))))))
 
 (defun deft-cache-file (file)
   "Update file cache if FILE exists."
@@ -780,6 +794,7 @@ Otherwise, quick create a new file."
     ;; Filtering
     (define-key map (kbd "C-c C-l") 'deft-filter)
     (define-key map (kbd "C-c C-c") 'deft-filter-clear)
+	(define-key map (kbd "<C-backspace>") 'deft-filter-clear)
     ;; File creation
     (define-key map (kbd "C-c C-n") 'deft-new-file)
     (define-key map (kbd "C-c C-m") 'deft-new-file-named)
