@@ -14,10 +14,9 @@
 
 ;; name and email -
 (setq user-full-name "Zach Davis")
-(if 'at-work
+(if at-work
     (setq user-mail-address "Zach.Davis@osii.com")
-    (setq user-mail-address "zdavkeos@gmail.com")
-)
+    (setq user-mail-address "zdavkeos@gmail.com"))
 
 ;; local elisp files path
 (setq load-path (append (list nil "~/.emacs.d") load-path))
@@ -29,24 +28,27 @@
 (global-set-key (kbd "C-c E")
   (lambda()(interactive)(find-file "~/.emacs.d/emacs.el")))
 
+(global-set-key [f1] 'signature)
+(global-set-key [f2] 'datestamp)
+
 ;; shortcut to TODO file
 (global-set-key [f3]
-  (lambda()
+  (lambda ()
 	(interactive)
-	(find-file (if 'at-work
+	(find-file (if at-work
 				   "u:/notes/TODO.org"
-				   "~/dropbox/notes/TODO.org"))))
+				   "~/Dropbox/notes/TODO.org"))))
 
 ;; set default tab width
 (setq-default tab-width 4)
 ;; use spaces instead of tabs
-(if 'at-work
+(if at-work
     (setq indent-line-function 'insert-tab) ; *hard tabs*
     (setq-default indent-tabs-mode nil) ; *soft tabs*
 )
-(setq tab-stop-list '(4 8 12 16 20 24 28 32 36 40 44 48 52 56 60
-              64 68 72 76 80 84 88 92 96 100 104 108 112
-              116 120))
+;(setq tab-stop-list '(4 8 12 16 20 24 28 32 36 40 44 48 52 56 60
+;              64 68 72 76 80 84 88 92 96 100 104 108 112
+;              116 120))
 
 ;; highlight matching parens
 (show-paren-mode 1)
@@ -68,16 +70,14 @@
 (setq mouse-drag-copy-region nil)
 
 ;; smoother scrolling - still needed in v24?
-(setq scroll-conservatively 8)
-(setq scroll-margin 1)
+;(setq scroll-conservatively 8)
+;(setq scroll-margin 1)
 
 ;; CUA mode settings
 (setq cua-enable-cua-keys nil)
 (cua-mode t)
 
 ;; set so comments over multiple lines, line up
-;(setq comment-style 'indent)
-;(setq comment-style 'aligned)
 (setq comment-style 'multi-line)
 
 ;; Make all yes-or-no questions as y-or-n
@@ -89,16 +89,14 @@
 ;; change how diff's are displayed
 (setq diff-switches "") ; unified diff
 (add-hook 'diff-mode-hook
-    (lambda ()
-        (local-set-key [M-down] 'diff-hunk-next)
-        (local-set-key [M-up] 'diff-hunk-prev)
-    )
-)
+		  (lambda ()
+			(local-set-key [M-down] 'diff-hunk-next)
+			(local-set-key [M-up] 'diff-hunk-prev)))
 
 ;; remember the last line you were on when you quit
+(require 'saveplace)
 (setq save-place-file "~/.emacs.d/saveplace")
 (setq-default save-place t)
-(require 'saveplace)
 
 ;; Automatically reload files after they've been modified 
 (global-auto-revert-mode 1)
@@ -107,9 +105,9 @@
 (add-hook 'c-mode-common-hook
   (lambda()
     ;(local-set-key  (kbd "C-c o") 'ff-find-other-file) ;find implementation in .c from .h
-    (which-function-mode t) ; add current function name to status bar
 	(imenu-add-menubar-index) ; add an index
     (local-set-key (kbd "C-c C-v") 'compile) ; make C^c C^v 'compile' in c-mode
+    (local-set-key (kbd "C-c C-f") 'mark-defun) ; make C^c C^f mark current function
     ; add highlights to TODO, etc. in c/c++/java files
     (font-lock-add-keywords nil
                 '(("\\<\\(FIXME\\|TODO\\|BUG\\):" 1 font-lock-warning-face t))
@@ -120,10 +118,9 @@
 	(setq c-basic-offset 4)
 	(add-to-list 'c-offsets-alist '(substatement-open . 0))
 	(add-to-list 'c-offsets-alist '(access-label . /))
-	(if 'at-work
+	(if at-work
 		(add-to-list 'c-offsets-alist '(case-label . 0) t)
-	  (add-to-list 'c-offsets-alist '(case-label . 4) t))
-    ))
+	  (add-to-list 'c-offsets-alist '(case-label . 4) t))))
 
 
 ;; couple of c++-mode hooks
@@ -132,25 +129,20 @@
     ;(set (make-local-variable 'compile-command) "g++ -Wall -g -o ")
     (local-set-key  (kbd "C-c C-v") 'compile) ; make C^c C^v 'compile' in c-mode
     (font-lock-add-keywords nil '(("\\<\\(FIXME\\|TODO\\|BUG\\):" 1 font-lock-warning-face t)))
-    (flyspell-prog-mode) ; spell checking of comments
-	(which-function-mode t)
-    ))
+    (flyspell-prog-mode))) ; spell checking of comments
 
 ;; couple of java-mode hooks
 (add-hook 'java-mode-hook
   (lambda()
-    (set (make-local-variable 'compile-command) "javac ")
-    ))
+    (set (make-local-variable 'compile-command) "javac ")))
 
 ;; python related stuff
-(add-to-list 'auto-mode-alist '("\\.py\\'" . python-mode))
-(add-to-list 'auto-mode-alist '("\\.ipy\\'" . python-mode))
-(add-to-list 'interpreter-mode-alist '("python" . python-mode))
+(add-to-list 'auto-mode-alist '("\\.ipy\\'" . python))
 (add-hook 'python-mode-hook
   (lambda ()
-    (local-set-key (kbd "C-c C-c") 'comment-region)
-	(which-function-mode t)))
-(autoload 'python-mode "python-mode" "Python Mode." t)
+	(setq python-indent-offset 4)
+	(setq tab-width 4)
+    (local-set-key (kbd "C-c C-c") 'comment-region)))
 
 ;; org mode hooks
 (add-hook 'org-mode-hook
@@ -173,7 +165,7 @@
 (global-set-key [prior] '(lambda () (interactive)(cua-scroll-down 3)))
 (global-set-key [next]  '(lambda () (interactive)(cua-scroll-up 3)))
 
-;; make C-[ => M-x
+;; make C-] => M-x
 (global-set-key (kbd "C-]") 'execute-extended-command)
 
 ;; record macro
@@ -231,19 +223,22 @@
 (global-set-key (kbd "C-<") (lambda() (interactive)(goto-char (point-min))))
 (global-set-key (kbd "C->") (lambda() (interactive)(goto-char (point-max))))
 
+;; parenthesis matching
+(global-set-key (kbd "C-}") 'forward-sexp)
+(global-set-key (kbd "C-{") 'backward-sexp)
+
 ;; backward-kill-sexp can be pretty handy
 (global-set-key (kbd "C-M-<backspace>") 'backward-kill-sexp)
 
 ;; kill from cursor to beginning of line
 (global-set-key (kbd "M-<backspace>") 'backward-kill-line)
 
-;;add support for common extensions
+;; add support for common extensions
 (add-to-list 'auto-mode-alist '("README"        . text-mode))
 (add-to-list 'auto-mode-alist '("\\.cu$"        . c-mode))
 (add-to-list 'auto-mode-alist '("\\.glsl$"      . c-mode))
 (add-to-list 'auto-mode-alist '("\\.stp$"       . c-mode))
 (add-to-list 'auto-mode-alist '("makefile.win$" . makefile-mode))
-(add-to-list 'auto-mode-alist '("\\..*json$" . js2-mode))
 
 ;; Ps Print settings
 ;; letter paper, 10 pt, no header
@@ -251,19 +246,19 @@
 	  ps-font-size 10.0
 	  ps-print-header nil
 	  ps-landscape-mode nil
-	  ps-number-of-columns 1)
+	  ps-number-of-columns 1
+	  ps-spool-duplex t)
 
 ;; fancy things up a bit
 (global-font-lock-mode t)
 (setq font-lock-maximum-decoration t)
 (modify-frame-parameters nil '((wait-for-wm . nil)))
 
-;; Set the window size (if running in a window) (broken?)
+;; Set the window size (if running in a window)
 (if (window-system)
 	(progn
 	  (add-to-list 'default-frame-alist (cons 'width 110))
-	  (add-to-list 'default-frame-alist (cons 'height 45))
-))
+	  (add-to-list 'default-frame-alist (cons 'height 45))))
 
 
 ;; Helper for compilation. Close the compilation window if
@@ -304,16 +299,14 @@
   (lambda ()
     (setq comment-column 25)))
 
+(require 'which-func)
+(set-face-attribute 'which-func nil :foreground "light cyan")
+(which-function-mode t)
+
 ;;;;;;;;;;;;;;;;;;;;;;; Stuff that requires dependencies ;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; enable line numbers: linum.el
-;; http://stud4.tuwien.ac.at/~e0225855/linum/linum.html
-;;;; Broken in emacs-24!!!!!
-;(require 'linum)
-;(global-set-key [f6] 'linum-mode)
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; javascript major mode using Steve Yegge's js2.el
@@ -321,6 +314,8 @@
 (autoload 'js2-mode "js2" "JavaScript Mode" t)
 (add-to-list 'auto-mode-alist '("\\.js$"   . js2-mode))
 (add-to-list 'auto-mode-alist '("\\.json$" . js2-mode))
+;(add-to-list 'auto-mode-alist '("\\.geojson$" . js2-mode)) ; also get geojson files
+
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; highlighting for dos batch files
@@ -331,23 +326,27 @@
 ;;;;;;;;;;;;;;;;;;;;
 ;; highlighting for osi files
 ;;;;;;;;;;;;;;;;;;;;
-(if 'at-work
+(if at-work
 	(progn
-	  (autoload 'rel-mode "relmode" "" t nil)
-	  (autoload 'skm-mode "skmmode" "" t nil)
-	  (autoload 'rc-mode  "rcmode"  "" t nil)
+	  (require 'osikey)
+	  (autoload 'rel-mode  "relmode" "" t nil)
+	  (autoload 'skm-mode  "skmmode" "" t nil)
+	  (autoload 'rc-mode   "rcmode"  "" t nil)
 	  (autoload 'dat-mode  "datmode"  "" t nil)
-	  (autoload 'prod-mode  "prodmode"  "" t nil)
+	  (autoload 'prod-mode "prodmode"  "" t nil)
+	  (autoload 'flt-mode  "fltmode" "" t nil)
 	  (autoload 'compile-req-mode  "compile-req-mode"  "" t nil)
 	  (add-to-list 'auto-mode-alist '("\\.rel$" . rel-mode))
 	  (add-to-list 'auto-mode-alist '("\\.skm$" . skm-mode))
 	  (add-to-list 'auto-mode-alist '("\\.rc$"  . rc-mode))
-	  (add-to-list 'auto-mode-alist '("\\.DAT$"  . dat-mode))
+	  (add-to-list 'auto-mode-alist '("\\.DAT$" . dat-mode))
 	  (add-to-list 'auto-mode-alist '("\\.atd$" . nxml-mode))
 	  (add-to-list 'auto-mode-alist '("\\.atr$" . nxml-mode))
 	  (add-to-list 'auto-mode-alist '("\\.olf$" . nxml-mode))
-	  (add-to-list 'auto-mode-alist '("products\\(NET\\)?.txt\\(.bak\\)?$" . prod-mode))
-	  (add-to-list 'auto-mode-alist '("compile_request.txt$" . compile-req-mode))))
+	  (add-to-list 'auto-mode-alist '("products.*\\.txt.*$" . prod-mode))
+	  (add-to-list 'auto-mode-alist '("compile_request\\.txt$" . compile-req-mode))
+	  (add-to-list 'auto-mode-alist '("\\.flt$" . flt-mode))
+	  (add-hook 'imenu-after-jump-hook (lambda () (recenter 'top)))))
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; change default font
@@ -365,20 +364,16 @@
 ;;;;;;;;;;;;;;;;;;;;
 ;; tex/latex stuff
 ;;;;;;;;;;;;;;;;;;;;
-;(load "auctex.el" nil t t)
-(setq TeX-auto-save t)
-(setq TeX-parse-self t)
-(setq TeX-save-query nil)
-(setq TeX-PDF-mode t) ; auctex, set pdf as the default
-;;add XeLaTeX
 (add-hook 'LaTeX-mode-hook
     (lambda()
       (add-to-list 'TeX-command-list '("XeLaTeX" "%`xelatex%(mode)%' %t" TeX-run-TeX nil t))
       (auto-fill-mode 1)
       (setq TeX-command-default "XeLaTeX")
-      (flyspell-mode t)
-    )
-)
+	  (setq TeX-auto-save t)
+	  (setq TeX-parse-self t)
+	  (setq TeX-save-query nil)
+	  (setq TeX-PDF-mode t) ; auctex, set pdf as the default
+      (flyspell-mode t)))
 
 ;; dependent stuff dependent on OS
 (if (eq system-type 'windows-nt)
@@ -436,14 +431,17 @@
 ;;;;;;;;;;;;;;;;;;;;
 ;; Deft mode
 ;;;;;;;;;;;;;;;;;;;;
+;(require 'deft)
+(autoload 'deft "deft.el" "Deft Mode" t)
 (setq deft-extension "org")
-(if 'at-work
+(if at-work
     (setq deft-directory "U:/notes/")
-    (setq deft-directory "~/dropbox/notes/"))
+    (setq deft-directory "~/Dropbox/notes/"))
 (setq deft-text-mode 'org-mode)
+(setq deft-strip-title-regexp "#\\+TITLE: ")
+(setq deft-strip-summary-regexp "#\\+DESCRIPTION: ")
 (setq deft-auto-save-interval 15.0)
 (global-set-key [f4] 'deft)
-(require 'deft)
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; Markdown mode
@@ -467,9 +465,35 @@
 (load "~/.emacs.d/haskell-mode/haskell-site-file.el")
 (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
+(add-hook 'haskell-mode-hook (lambda () 
+							   (local-set-key (kbd "C-c C-c") 'comment-region)))
 ;;(add-hook 'haskell-mode-hook 'turn-on-haskell-simple-indent)
 (setq haskell-program-name "C:/hp/bin/ghci.exe")
 (setq haskell-check-command "C:/Users/zdavis/AppData/Roaming/cabal/bin/hlint.exe")
 
 ;; M-x typing-of-emacs
 (require 'typing)
+
+;; htmlize package
+(require 'htmlize)
+
+;; json file editing
+(require 'json-mode)
+(add-hook 'json-mode-hook (lambda () (wrapping)))
+(autoload 'json-mode "json-mode" "Major mode for editing JSON files")
+
+;; turtle file edting
+(autoload 'turtle-mode "turtlemode" "" t nil)
+
+;; chicken scheme
+;(autoload 'chicken "chicken" "Chicken Scheme mode." t)
+(require 'chicken)
+(setq scheme-program-name "C:/cygwin/usr/local/bin/csi -:c")
+(put 'when 'scheme-indent-function 1)
+(put 'unless 'scheme-indent-function 1)
+(put 'match 'scheme-indent-function 1)
+
+;; This snippet enables lua-mode
+(autoload 'lua-mode "lua-mode" "Lua editing mode." t)
+(add-to-list 'auto-mode-alist '("\\.lua$" . lua-mode))
+(add-to-list 'interpreter-mode-alist '("lua" . lua-mode))
