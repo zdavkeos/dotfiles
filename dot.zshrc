@@ -55,25 +55,35 @@ function simple_time {
     date +"%I:%M%p"
 }
 
+# when in a git repo, only look at local files instead of asking git
+__git_files () { 
+    _wanted files expl 'local files' _files     
+}
+
 ## Prompt
-export PROMPT='\033[G[%n@%m] %.%# '
+export PROMPT='[%n@%m] %.%# '
+#export PROMPT='\033[G[%n@%m] %.%# '
 #setopt PROMPT_SUBST
 #export RPROMPT='->$(simple_time) %!'
 #export PROMPT='[%n@%m$(batt_level)] %.$(prompt_char)%# '
 #export PROMPT='[%n@%m] %.$(prompt_char)%# '
 
 #global exports
+export LANGUAGE=en_US.UTF8
+export EDITOR=emacsclient
 export SVN_EDITOR='emacs'
 
-export PATH=$PATH:/opt/node/bin
+export PATH="$HOME/.cargo/bin:$PATH"
 
 # my aliases
 alias emacsq='emacs -nw -Q'
-alias e='emacs'
+alias e='emacsclient -c --no-wait'
 alias claer='clear' # I always miss-type these two...
 alias clera='clear'
+alias l='ls'
 alias la='ls -a'
 alias ll='ls -lh'
 alias cd..='cd ..'
 alias py='python'
-
+alias cls='clear'
+alias givm='gvim'

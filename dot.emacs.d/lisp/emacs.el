@@ -15,18 +15,18 @@
 ;; name and email -
 (setq user-full-name "Zach Davis")
 (if at-work
-    (setq user-mail-address "Zach.Davis@osii.com")
+    (setq user-mail-address "Zach.Davis@stratasys.com")
     (setq user-mail-address "zdavkeos@gmail.com"))
 
 ;; local elisp files path
-(setq load-path (append (list nil "~/.emacs.d") load-path))
+(setq load-path (append (list nil "~/.emacs.d/lisp") load-path))
 
 ;; load my set of handy functions
-(load "~/.emacs.d/funcs.el")
+(require 'funcs)
 
 ;; shortcut to open .emacs (emacs-fu)
 (global-set-key (kbd "C-c E")
-  (lambda()(interactive)(find-file "~/.emacs.d/emacs.el")))
+  (lambda()(interactive)(find-file "~/.emacs.d/lisp/emacs.el")))
 
 (global-set-key [f1] 'signature)
 (global-set-key [f2] 'datestamp)
@@ -36,7 +36,7 @@
   (lambda ()
 	(interactive)
 	(find-file (if at-work
-				   "u:/notes/TODO.org"
+				   "~/notes/TODO.org"
 				   "~/Dropbox/notes/TODO.org"))))
 
 ;; set default tab width

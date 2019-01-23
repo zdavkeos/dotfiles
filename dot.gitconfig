@@ -1,16 +1,19 @@
 [user]
 	name = Zach Davis
-	email = zdavkeos@gmail.com
-[merge]
-	tool = meld
+	email = zdavkeos@stratasys.com
 [core]
 	editor = emacs
 [alias]
-	lg = log
+    lg = log --no-merges
 	st = status
 	ci = commit
 	co = checkout
 	br = branch
+    last = diff HEAD~1
+    dt = difftool
+    pullr = pull --recurse-submodules
+    graph = log --graph --oneline --all
+    tree = log --graph --pretty=oneline --abbrev-commit
 [github]
-	name=zdavkeos
+	name = zdavkeos
 

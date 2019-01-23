@@ -47,8 +47,11 @@ syntax on
 if has("gui_running")
 	set guioptions-=T
 	set t_Co=256
+	set background=dark
+	let g:solarized_italic=0
+
 	colorscheme solarized
-	"colorscheme zenburn
+	" colorscheme zenburn
 	set lines=50
 	set columns=110
 	"set nonu
@@ -58,10 +61,8 @@ endif
 
 " syntax highlighting for REL, RC and SKM files
 augroup filetypedetect
-"au BufNewFile,BufRead *.rel	setf osirel
-"au BufNewFile,BufRead *.skm	setf osiskm
-" au BufNewFile,BufRead *.rc	setf osirc
 au BufNewFile,BufRead *.geojson setf javascript
+au BufNewFile,BufRead *.mpf setf ngc
 augroup END
 
 " setup system specific stuff
